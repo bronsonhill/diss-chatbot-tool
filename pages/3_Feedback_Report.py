@@ -236,11 +236,14 @@ if conversation_history:
                 st.session_state["assessor_conversation_done"] = True
                 
                 # Log the feedback
-                log_transcript(
-                    st.session_state["mongodb_uri"],
-                    "assessor",
-                    [{"role": "assistant", "content": json.dumps(feedback_data, indent=2)}]
-                )
+                try:
+                    log_transcript(
+                        st.session_state["mongodb_uri"],
+                        "assessor",
+                        [{"role": "assistant", "content": json.dumps(feedback_data, indent=2)}]
+                    )
+                except Exception as e:
+                    st.error(f"Error logging feedback: {str(e)}")
                 
             except Exception as e:
                 st.error(f"Error generating feedback: {str(e)}")

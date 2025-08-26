@@ -95,15 +95,22 @@ if use_voice:
                         st.session_state.patient_conversation_done = True
                         
                         # Log the transcript
-                        session_id = log_transcript(
-                            st.session_state["mongodb_uri"],
-                            "patient_audio",
-                            st.session_state.audio_chat_history
-                        )
-                        st.session_state.audio_session_id = session_id
-                        st.session_state.session_id = session_id
-                        st.success("Audio interview logged successfully!")
-                        st.rerun()
+                        try:
+                            session_id = log_transcript(
+                                st.session_state["mongodb_uri"],
+                                "patient_audio",
+                                st.session_state.audio_chat_history
+                            )
+                            if session_id:
+                                st.session_state.audio_session_id = session_id
+                                st.session_state.session_id = session_id
+                                st.success("Audio interview logged successfully!")
+                            else:
+                                st.warning("⚠️ Interview completed but could not be logged to database.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error logging audio interview: {str(e)}")
+                            st.rerun()
 
         else:
             # Show completed conversation transcript
@@ -196,13 +203,20 @@ else:
         if not st.session_state.patient_conversation_done and st.session_state.patient_chat_history:
             if st.button("Finish Interview", key="finish_patient", use_container_width=True):
                 st.session_state.patient_conversation_done = True
-                session_id = log_transcript(
-                    st.session_state["mongodb_uri"],
-                    "patient",
-                    st.session_state.patient_chat_history
-                )
-                st.session_state.session_id = session_id
-                st.rerun()
+                try:
+                    session_id = log_transcript(
+                        st.session_state["mongodb_uri"],
+                        "patient",
+                        st.session_state.patient_chat_history
+                    )
+                    if session_id:
+                        st.session_state.session_id = session_id
+                    else:
+                        st.warning("⚠️ Interview completed but could not be logged to database.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error logging interview: {str(e)}")
+                    st.rerun()
 
 # Progress indicator
 if st.session_state.patient_conversation_done:

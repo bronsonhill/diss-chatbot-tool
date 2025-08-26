@@ -119,11 +119,15 @@ def init_page():
     )
 
     if identifier:
-        if check_identifier(st.session_state["mongodb_uri"], identifier):
-            st.session_state["user_identifier"] = identifier
-            st.success("✅ Identifier validated successfully. You can now proceed to the interview pages.")
-        else:
-            st.error("❌ Invalid identifier. Please enter a valid identifier.")
+        try:
+            if check_identifier(st.session_state["mongodb_uri"], identifier):
+                st.session_state["user_identifier"] = identifier
+                st.success("✅ Identifier validated successfully. You can now proceed to the interview pages.")
+            else:
+                st.error("❌ Invalid identifier. Please enter a valid identifier.")
+                st.session_state["user_identifier"] = ""
+        except Exception as e:
+            st.error(f"❌ Error validating identifier: {str(e)}")
             st.session_state["user_identifier"] = ""
     else:
         st.warning("⚠️ Please enter your identifier before starting any conversations.")
