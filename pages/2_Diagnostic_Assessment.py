@@ -98,19 +98,15 @@ if submitted:
     }
     
     # Log the diagnosis results
-    try:
-        log_transcript(
-            st.session_state["mongodb_uri"],
-            "diagnosis",
-            [],
-            st.session_state["diagnosis_results"]
-        )
-        st.session_state["diagnosis_done"] = True
-        st.rerun()
-    except Exception as e:
-        st.error(f"Error logging diagnosis results: {str(e)}")
-        st.session_state["diagnosis_done"] = True
-        st.rerun()
+    log_transcript(
+        st.session_state["mongodb_uri"],
+        "diagnosis",
+        [],
+        st.session_state["diagnosis_results"]
+    )
+    
+    st.session_state["diagnosis_done"] = True
+    st.rerun()
 
 # Display results if assessment is completed
 if st.session_state.get("diagnosis_done", False):

@@ -3,60 +3,22 @@ from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
 from datetime import datetime
 import streamlit as st
-import ssl
 
 def get_mongo_client(connection_string):
-    """Create MongoDB client with SSL configuration for cloud deployment."""
-    try:
-        # Configure SSL context for cloud deployment
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        
-        # Create client with SSL configuration
-        client = MongoClient(
-            connection_string,
-            server_api=ServerApi('1'),
-            ssl=True,
-            ssl_cert_reqs=ssl.CERT_NONE,
-            ssl_ca_certs=None,
-            tlsAllowInvalidCertificates=True,
-            tlsAllowInvalidHostnames=True,
-            connectTimeoutMS=30000,
-            socketTimeoutMS=30000,
-            serverSelectionTimeoutMS=30000
-        )
-        
-        # Test the connection
-        client.admin.command('ping')
-        return client
-        
-    except Exception as e:
-        st.error(f"MongoDB connection error: {str(e)}")
-        return None
+    return MongoClient(connection_string, server_api=ServerApi('1'))
 
 def check_identifier(connection_string, identifier):
     """Check if the identifier exists in the valid_identifiers collection."""
     client = get_mongo_client(connection_string)
-    if client is None:
-        return False
-    
     db = client.diss_chatbot
     try:
         result = db.valid_identifiers.find_one({"identifier": identifier})
         return bool(result)
-    except Exception as e:
-        st.error(f"Error checking identifier: {str(e)}")
-        return False
     finally:
         client.close()
 
 def log_transcript(connection_string, conversation_type, messages, diagnosis_results=None):
     client = get_mongo_client(connection_string)
-    if client is None:
-        st.error("Cannot log transcript: MongoDB connection failed")
-        return None
-    
     db = client.diss_chatbot
     collection = db.transcripts
 
@@ -105,8 +67,5 @@ def log_transcript(connection_string, conversation_type, messages, diagnosis_res
             }
             result = collection.insert_one(document)
             return str(result.inserted_id)
-    except Exception as e:
-        st.error(f"Error logging transcript: {str(e)}")
-        return None
     finally:
         client.close()
